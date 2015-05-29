@@ -1,10 +1,6 @@
 package controllers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import models.Category;
 import models.JeopardyDAO;
@@ -19,6 +15,8 @@ import play.db.jpa.Transactional;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import twitter.TwitterClient;
+import twitter.TwitterStatusMessage;
 import views.html.jeopardy;
 import views.html.question;
 import views.html.winner;
@@ -155,7 +153,22 @@ public class GameController extends Controller {
 		JeopardyGame game = cachedGame(request().username());
 		if(game == null || !game.isGameOver())
 			return redirect(routes.GameController.playGame());
-		
+
+
+
+		String uuid="";
+		TwitterClient twitter =  new TwitterClient();
+		// TwitterStatusMessage(String from, String uuid, Date dateTime)
+		/*if(uuid != null) {
+			try {
+				twitter.publishUuid(new TwitterStatusMessage(game.getHumanPlayer().getUser().getName(), uuid, new Date()));
+				Logger.info("Der Text wurde erfolgreich auf Twitter veröffentlicht!" );
+			} catch (Exception e) {
+				Logger.error("Es ist ein Fehler beim veröffentlichen auf Twitter aufgetreten!" );
+				e.printStackTrace();
+			}
+		}*/
+
 		Logger.info("[" + request().username() + "] Game over.");		
 		return ok(winner.render(game));
 	}
