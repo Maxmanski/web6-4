@@ -161,7 +161,6 @@ public class GameController extends Controller {
 		if(game == null || !game.isGameOver())
 			return redirect(routes.GameController.playGame());
 
-<<<<<<< HEAD
 		try {
 			ObjectFactory objectFactory = new ObjectFactory();
 			HighScoreRequestType requestType = objectFactory.createHighScoreRequestType();
@@ -212,9 +211,9 @@ public class GameController extends Controller {
 			Logger.info(e.getMessage());
 		}
 		Logger.info("[" + request().username() + "] Game over.");
-=======
 
 
+		/**
 		String uuid="";
 		TwitterClient twitter =  new TwitterClient();
 		// TwitterStatusMessage(String from, String uuid, Date dateTime)
@@ -227,9 +226,6 @@ public class GameController extends Controller {
 				e.printStackTrace();
 			}
 		}*/
-
-		Logger.info("[" + request().username() + "] Game over.");		
->>>>>>> origin/nici
 		return ok(winner.render(game));
 	}
 }
