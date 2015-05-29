@@ -1,5 +1,6 @@
 package models;
 
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -8,6 +9,7 @@ import java.util.List;
 /**
  * Represents a category, which is stored in the DB
  */
+@Entity
 public class Category extends BaseEntity {
 
 
@@ -16,6 +18,7 @@ public class Category extends BaseEntity {
 
 
     //A list of questions in this category
+    @Transient
     private List<Question> questions = new ArrayList<Question>();
     
     /**

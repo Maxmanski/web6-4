@@ -4,6 +4,7 @@ package models;
 /**
  * Represents an answer which is stored in the DB
  */
+@Entity
 public class Answer extends BaseEntity {
 
 
@@ -12,6 +13,7 @@ public class Answer extends BaseEntity {
 
     private Boolean correctAnswer;
 
+    @Transient
     private Question question;
 
     /**
