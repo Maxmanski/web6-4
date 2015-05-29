@@ -1,9 +1,6 @@
 package models;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +22,7 @@ public class Question extends BaseEntity {
 
 
     //A list of right choices in this category
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "question")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "question")
     private List<Answer> answers = new ArrayList<Answer>();
 
 
