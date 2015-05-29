@@ -232,7 +232,7 @@ WHERE {
  FILTER langMatches( lang(?var3), 'en') .
 } LIMIT 5 OFFSET 0
         * */
-        
+
         queryString = "SELECT DISTINCT ?subject \n" +
                 "WHERE {\n" +
                 " ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Film> .\n" +
