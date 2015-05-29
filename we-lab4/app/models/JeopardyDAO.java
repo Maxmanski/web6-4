@@ -6,6 +6,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
 import play.db.jpa.JPA;
+import org.hibernate.Session;
+import org.hibernate.Criteria;
 
 /**
  * Provides Data Access methods for JPA
@@ -95,7 +97,8 @@ public class JeopardyDAO implements IGameDAO {
      */
     @Override
     public <E extends BaseEntity> List<E> findEntities(Class<E> entityClazz) {
-        return em().createQuery("SELECT x FROM "+ entityClazz.getClass() +" x").getResultList();
+        Criteria c = ((Session) em().getDelegate()).createCriteria(entityClazz);
+        return c.list();
     }
 
     /**
