@@ -1,6 +1,9 @@
 package models;
 
 
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+
 /**
  * Represents an answer which is stored in the DB
  */
@@ -13,7 +16,7 @@ public class Answer extends BaseEntity {
 
     private Boolean correctAnswer;
 
-    @Transient
+    @ManyToOne
     private Question question;
 
     /**

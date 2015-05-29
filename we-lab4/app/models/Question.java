@@ -1,5 +1,9 @@
 package models;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,12 +20,12 @@ public class Question extends BaseEntity {
     private int value;
 
     //The category to which this question belongs to
-    @Transient
+    @ManyToOne
     private Category category;
 
 
     //A list of right choices in this category
-    @Transient
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "question")
     private List<Answer> answers = new ArrayList<Answer>();
 
 

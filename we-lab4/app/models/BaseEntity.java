@@ -1,14 +1,20 @@
 package models;
 
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 
 /**
  * Base entity for all JPA classes
  */
-@Entity
+@MappedSuperclass
 public class BaseEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+   // @GeneratedValue(strategy = GenerationType.AUTO)
     protected Long id;
 
     public Long getId() {
