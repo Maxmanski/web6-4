@@ -161,6 +161,7 @@ public class GameController extends Controller {
 		if(game == null || !game.isGameOver())
 			return redirect(routes.GameController.playGame());
 
+<<<<<<< HEAD
 		try {
 			ObjectFactory objectFactory = new ObjectFactory();
 			HighScoreRequestType requestType = objectFactory.createHighScoreRequestType();
@@ -211,6 +212,24 @@ public class GameController extends Controller {
 			Logger.info(e.getMessage());
 		}
 		Logger.info("[" + request().username() + "] Game over.");
+=======
+
+
+		String uuid="";
+		TwitterClient twitter =  new TwitterClient();
+		// TwitterStatusMessage(String from, String uuid, Date dateTime)
+		/*if(uuid != null) {
+			try {
+				twitter.publishUuid(new TwitterStatusMessage(game.getHumanPlayer().getUser().getName(), uuid, new Date()));
+				Logger.info("Der Text wurde erfolgreich auf Twitter veröffentlicht!" );
+			} catch (Exception e) {
+				Logger.error("Es ist ein Fehler beim veröffentlichen auf Twitter aufgetreten!" );
+				e.printStackTrace();
+			}
+		}*/
+
+		Logger.info("[" + request().username() + "] Game over.");		
+>>>>>>> origin/nici
 		return ok(winner.render(game));
 	}
 }
