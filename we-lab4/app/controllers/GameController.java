@@ -1,11 +1,8 @@
 package controllers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
+import highscore.*;
 import models.Category;
 import models.JeopardyDAO;
 import models.JeopardyGame;
@@ -19,14 +16,21 @@ import play.db.jpa.Transactional;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import twitter.ITwitterClient;
+import twitter.TwitterClient;
+import twitter.TwitterStatusMessage;
 import views.html.jeopardy;
 import views.html.question;
 import views.html.winner;
+
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 @Security.Authenticated(Secured.class)
 public class GameController extends Controller {
 	
 	protected static final int CATEGORY_LIMIT = 5;
+	private static String userKey = "3ke93-gue34-dkeu9";
 	
 	@Transactional
 	public static Result index() {
@@ -152,11 +156,61 @@ public class GameController extends Controller {
 	
 	@play.db.jpa.Transactional(readOnly = true)
 	public static Result gameOver() {
+		String UUID="";
 		JeopardyGame game = cachedGame(request().username());
 		if(game == null || !game.isGameOver())
 			return redirect(routes.GameController.playGame());
-		
-		Logger.info("[" + request().username() + "] Game over.");		
+
+		try {
+			ObjectFactory objectFactory = new ObjectFactory();
+			HighScoreRequestType requestType = objectFactory.createHighScoreRequestType();
+			requestType.setUserKey(userKey);
+			requestType.setUserData(objectFactory.createUserDataType());
+			UserDataType players = requestType.getUserData();
+
+			players.setWinner(objectFactory.createUserType());
+			UserType winner = players.getWinner();
+			winner.setFirstName(game.getWinner().getUser().getFirstName());
+			winner.setLastName(game.getWinner().getUser().getLastName());
+			winner.setPassword("");
+			winner.setPoints(game.getWinner().getProfit());
+			winner.setGender(GenderType.fromValue(game.getWinner().getUser().getGender().name()));
+
+			players.setLoser(objectFactory.createUserType());
+			UserType loser = players.getLoser();
+			loser.setFirstName(game.getLoser().getUser().getFirstName());
+			loser.setLastName(game.getLoser().getUser().getLastName());
+			loser.setPassword("");
+			loser.setPoints(game.getLoser().getProfit());
+			loser.setGender(GenderType.fromValue(game.getLoser().getUser().getGender().name()));
+
+			GregorianCalendar winnerBithDateGC = new GregorianCalendar();
+			winnerBithDateGC.setTime(game.getWinner().getUser().getBirthDate());
+			XMLGregorianCalendar winnerBirthDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(winnerBithDateGC);
+			GregorianCalendar loserBithDateGC = new GregorianCalendar();
+			loserBithDateGC.setTime(game.getLoser().getUser().getBirthDate());
+			XMLGregorianCalendar loserBirthDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(loserBithDateGC);
+
+			winner.setBirthDate(winnerBirthDate);
+			loser.setBirthDate(loserBirthDate);
+
+			PublishHighScoreEndpoint endpoint = new PublishHighScoreService().getPublishHighScorePort();
+
+			try {
+				String uuid = endpoint.publishHighScore(requestType);
+				Logger.info("UUID: " + uuid);
+				ITwitterClient twitterClient = new TwitterClient();
+				twitterClient.publishUuid(new TwitterStatusMessage(request().username(), uuid, new Date()));
+				flash("success", "UUID " + uuid + " wurde auf Twitter veroeffentlicht");
+			} catch (Failure f) {
+				Logger.error("result could not be sent or response has not been received.");
+			}
+
+		}
+		catch (Exception e) {
+			Logger.info(e.getMessage());
+		}
+		Logger.info("[" + request().username() + "] Game over.");
 		return ok(winner.render(game));
 	}
 }
