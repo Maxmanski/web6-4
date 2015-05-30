@@ -23,6 +23,7 @@ import views.html.jeopardy;
 import views.html.question;
 import views.html.winner;
 
+import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -156,76 +157,72 @@ public class GameController extends Controller {
 	
 	@play.db.jpa.Transactional(readOnly = true)
 	public static Result gameOver() {
-		String UUID="";
 		JeopardyGame game = cachedGame(request().username());
 		if(game == null || !game.isGameOver())
 			return redirect(routes.GameController.playGame());
 
+		ObjectFactory objectFactory = new ObjectFactory();
+		HighScoreRequestType requestType = objectFactory.createHighScoreRequestType();
+		requestType.setUserKey("3ke93-gue34-dkeu9");
+		requestType.setUserData(objectFactory.createUserDataType());
+		UserDataType players = requestType.getUserData();
+
+		players.setWinner(objectFactory.createUserType());
+		UserType win = players.getWinner();
+		win.setFirstName(game.getWinner().getUser().getFirstName());
+		win.setLastName(game.getWinner().getUser().getLastName());
+		win.setPassword("");
+		win.setPoints(game.getWinner().getProfit());
+		win.setGender(GenderType.fromValue(game.getWinner().getUser().getGender().name()));
+
+		players.setLoser(objectFactory.createUserType());
+		UserType loser = players.getLoser();
+		loser.setFirstName(game.getLoser().getUser().getFirstName());
+		loser.setLastName(game.getLoser().getUser().getLastName());
+		loser.setPassword("");
+		loser.setPoints(game.getLoser().getProfit());
+		loser.setGender(GenderType.fromValue(game.getLoser().getUser().getGender().name()));
+
+		GregorianCalendar winnerBithDateGC = new GregorianCalendar();
+		winnerBithDateGC.setTime(game.getWinner().getUser().getBirthDate());
+		XMLGregorianCalendar winnerBirthDate = null;
 		try {
-			ObjectFactory objectFactory = new ObjectFactory();
-			HighScoreRequestType requestType = objectFactory.createHighScoreRequestType();
-			requestType.setUserKey(userKey);
-			requestType.setUserData(objectFactory.createUserDataType());
-			UserDataType players = requestType.getUserData();
-
-			players.setWinner(objectFactory.createUserType());
-			UserType winner = players.getWinner();
-			winner.setFirstName(game.getWinner().getUser().getFirstName());
-			winner.setLastName(game.getWinner().getUser().getLastName());
-			winner.setPassword("");
-			winner.setPoints(game.getWinner().getProfit());
-			winner.setGender(GenderType.fromValue(game.getWinner().getUser().getGender().name()));
-
-			players.setLoser(objectFactory.createUserType());
-			UserType loser = players.getLoser();
-			loser.setFirstName(game.getLoser().getUser().getFirstName());
-			loser.setLastName(game.getLoser().getUser().getLastName());
-			loser.setPassword("");
-			loser.setPoints(game.getLoser().getProfit());
-			loser.setGender(GenderType.fromValue(game.getLoser().getUser().getGender().name()));
-
-			GregorianCalendar winnerBithDateGC = new GregorianCalendar();
-			winnerBithDateGC.setTime(game.getWinner().getUser().getBirthDate());
-			XMLGregorianCalendar winnerBirthDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(winnerBithDateGC);
-			GregorianCalendar loserBithDateGC = new GregorianCalendar();
-			loserBithDateGC.setTime(game.getLoser().getUser().getBirthDate());
-			XMLGregorianCalendar loserBirthDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(loserBithDateGC);
-
-			winner.setBirthDate(winnerBirthDate);
-			loser.setBirthDate(loserBirthDate);
-
-			PublishHighScoreEndpoint endpoint = new PublishHighScoreService().getPublishHighScorePort();
-
-			try {
-				String uuid = endpoint.publishHighScore(requestType);
-				Logger.info("UUID: " + uuid);
-				ITwitterClient twitterClient = new TwitterClient();
-				twitterClient.publishUuid(new TwitterStatusMessage(request().username(), uuid, new Date()));
-				flash("success", "UUID " + uuid + " wurde auf Twitter veroeffentlicht");
-			} catch (Failure f) {
-				Logger.error("result could not be sent or response has not been received.");
-			}
-
+			winnerBirthDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(winnerBithDateGC);
+		} catch (DatatypeConfigurationException e) {
+			e.printStackTrace();
 		}
-		catch (Exception e) {
-			Logger.info(e.getMessage());
+		GregorianCalendar loserBithDateGC = new GregorianCalendar();
+		loserBithDateGC.setTime(game.getLoser().getUser().getBirthDate());
+		XMLGregorianCalendar loserBirthDate = null;
+		try {
+			loserBirthDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(loserBithDateGC);
+		} catch (DatatypeConfigurationException e) {
+			e.printStackTrace();
 		}
-		Logger.info("[" + request().username() + "] Game over.");
+		win.setBirthDate(winnerBirthDate);
+		loser.setBirthDate(loserBirthDate);
 
+		PublishHighScoreEndpoint endpoint = new PublishHighScoreService().getPublishHighScorePort();
 
-		/**
-		String uuid="";
+		String uuid = null;
+		try {
+			uuid = endpoint.publishHighScore(requestType);
+			Logger.info("UUID: " + uuid);
+		} catch (Failure failure) {
+			failure.printStackTrace();
+		}
 		TwitterClient twitter =  new TwitterClient();
 		// TwitterStatusMessage(String from, String uuid, Date dateTime)
-		/*if(uuid != null) {
+		if(uuid != null) {
 			try {
 				twitter.publishUuid(new TwitterStatusMessage(game.getHumanPlayer().getUser().getName(), uuid, new Date()));
-				Logger.info("Der Text wurde erfolgreich auf Twitter veröffentlicht!" );
+				Logger.info("Der Text wurde erfolgreich auf Twitter veroeffentlicht!" );
 			} catch (Exception e) {
-				Logger.error("Es ist ein Fehler beim veröffentlichen auf Twitter aufgetreten!" );
+				Logger.error("Es ist ein Fehler beim veroeffentlichen auf Twitter aufgetreten!" );
 				e.printStackTrace();
 			}
-		}*/
+		}
+		Logger.info("[" + request().username() + "] Game over.");
 		return ok(winner.render(game));
 	}
 }
