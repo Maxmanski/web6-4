@@ -13,6 +13,7 @@ import models.Answer;
 import models.Category;
 import models.Question;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -24,6 +25,28 @@ public class QuestionCreator {
         this.moviesCategory = new Category();
         this.moviesCategory.setNameDE("Filme");
         this.moviesCategory.setNameEN("Movies");
+    }
+
+    public List<Question> getLinkedOpenDataQuestions(){
+        List<Question> questions = new ArrayList<Question>(6);
+
+        questions.add(this.getTimBurtonQuestion());
+        questions.add(this.getJohnnyDeppMovies());
+        questions.add(this.getMovieGrossingQuestion());
+        questions.add(this.getOldMoviesQuestion());
+        questions.add(this.getChristianBaleFilms());
+        questions.add(this.getHansZimmerMusicFilms());
+
+        return questions;
+    }
+
+    public List<Category> getCategories(){
+        this.getLinkedOpenDataQuestions();
+        
+        List<Category> categories = new ArrayList<Category>(1);
+        categories.add(this.moviesCategory);
+
+        return categories;
     }
 
     public Question getTimBurtonQuestion(){
@@ -130,7 +153,7 @@ public class QuestionCreator {
                 "\n" +
                 " FILTER (datatype(?gross) = <http://dbpedia.org/datatype/usDollar>) .\n" +
                 " BIND (<http://www.w3.org/2001/XMLSchema#integer>(?gross) as ?intgross) .\n" +
-                " FILTER (?intgross > 1000000000) .\n" +
+                " FILTER (?intgross > 100000000) .\n" +
                 " FILTER EXISTS { ?subject <http://dbpedia.org/ontology/gross> ?gross } .\n" +
                 " FILTER EXISTS { ?subject <http://xmlns.com/foaf/0.1/name> ?var0 } .\n" +
                 " FILTER langMatches( lang(?var3), 'de') .\n" +
@@ -152,7 +175,7 @@ public class QuestionCreator {
                 "\n" +
                 " FILTER (datatype(?gross) = <http://dbpedia.org/datatype/usDollar>) .\n" +
                 " BIND (<http://www.w3.org/2001/XMLSchema#integer>(?gross) as ?intgross) .\n" +
-                " FILTER (?intgross < 1000000000) .\n" +
+                " FILTER (?intgross < 100000000) .\n" +
                 " FILTER EXISTS { ?subject <http://dbpedia.org/ontology/gross> ?gross } .\n" +
                 " FILTER EXISTS { ?subject <http://xmlns.com/foaf/0.1/name> ?var0 } .\n" +
                 " FILTER langMatches( lang(?var3), 'de') .\n" +
@@ -165,8 +188,8 @@ public class QuestionCreator {
         germanLowMovies = DBPediaService.getResourceNames(lowMovies, Locale.GERMAN);
         englishLowMovies = DBPediaService.getResourceNames(lowMovies, Locale.ENGLISH);
 
-        return this.createQuestion(this.moviesCategory, 50, "Diese Filme haben mehr als 1.000.000.000 USD eingespielt",
-                "These movies have grossed more than 1,000,000,000 USD",
+        return this.createQuestion(this.moviesCategory, 50, "Diese Filme haben mehr als 100.000.000 USD eingespielt",
+                "These movies have grossed more than 100,000,000 USD",
                 germanHighMovies, englishHighMovies, germanLowMovies, englishLowMovies);
     }
 
@@ -249,7 +272,7 @@ public class QuestionCreator {
         germanNoChristianMovies = DBPediaService.getResourceNames(noChristianMovies, Locale.GERMAN);
         englishNoChristianMovies = DBPediaService.getResourceNames(noChristianMovies, Locale.ENGLISH);
 
-        return this.createQuestion(this.moviesCategory, 20, "In diesen Filmen hat " + germanChristianName + " mitgespielt",
+        return this.createQuestion(this.moviesCategory, 40, "In diesen Filmen hat " + germanChristianName + " mitgespielt",
                 englishChristianName + " starred in these movies", germanChristianMovies, englishChristianMovies, germanNoChristianMovies, englishNoChristianMovies);
     }
 
@@ -285,7 +308,7 @@ public class QuestionCreator {
         germanNoHansMovies = DBPediaService.getResourceNames(noHansMovies, Locale.GERMAN);
         englishNoHansMovies = DBPediaService.getResourceNames(noHansMovies, Locale.ENGLISH);
 
-        return this.createQuestion(this.moviesCategory, 20, germanHansName + " hat für diese Filme die Musik komponiert",
+        return this.createQuestion(this.moviesCategory, 20, germanHansName + " hat fuer diese Filme die Musik komponiert",
                 englishHansName + " composed the music for these movies", germanHansMovies, englishHansMovies,
                 germanNoHansMovies, englishNoHansMovies);
     }

@@ -2,6 +2,7 @@ package controllers;
 
 import java.util.*;
 
+import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
 import highscore.*;
 import models.Category;
 import models.JeopardyDAO;
@@ -23,6 +24,7 @@ import views.html.jeopardy;
 import views.html.question;
 import views.html.winner;
 
+import javax.sound.midi.Soundbank;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -167,38 +169,57 @@ public class GameController extends Controller {
 		requestType.setUserData(objectFactory.createUserDataType());
 		UserDataType players = requestType.getUserData();
 
+		String winnerFN, winnerLN, loserFN, loserLN;
+		winnerFN = game.getWinner().getUser().getFirstName();
+		winnerLN = game.getWinner().getUser().getLastName();
+		loserFN = game.getLoser().getUser().getFirstName();
+		loserLN = game.getLoser().getUser().getLastName();
+
 		players.setWinner(objectFactory.createUserType());
 		UserType win = players.getWinner();
-		win.setFirstName(game.getWinner().getUser().getFirstName());
-		win.setLastName(game.getWinner().getUser().getLastName());
+		win.setFirstName((winnerFN == null || winnerFN.isEmpty()) ? "Unknown" : winnerFN);
+		win.setLastName((winnerLN == null || winnerLN.isEmpty()) ? "User" : winnerLN);
 		win.setPassword("");
 		win.setPoints(game.getWinner().getProfit());
 		win.setGender(GenderType.fromValue(game.getWinner().getUser().getGender().name()));
 
 		players.setLoser(objectFactory.createUserType());
 		UserType loser = players.getLoser();
-		loser.setFirstName(game.getLoser().getUser().getFirstName());
-		loser.setLastName(game.getLoser().getUser().getLastName());
+		loser.setFirstName((loserFN == null || loserFN.isEmpty()) ? "Unknown" : loserFN);
+		loser.setLastName((loserLN == null || loserLN.isEmpty()) ? "User" : loserLN);
 		loser.setPassword("");
 		loser.setPoints(game.getLoser().getProfit());
 		loser.setGender(GenderType.fromValue(game.getLoser().getUser().getGender().name()));
 
 		GregorianCalendar winnerBithDateGC = new GregorianCalendar();
-		winnerBithDateGC.setTime(game.getWinner().getUser().getBirthDate());
 		XMLGregorianCalendar winnerBirthDate = null;
+
+		Date winnerBDay = game.getWinner().getUser().getBirthDate();
+		if(winnerBDay != null){
+			winnerBithDateGC.setTime(winnerBDay);
+		}
+
 		try {
 			winnerBirthDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(winnerBithDateGC);
-		} catch (DatatypeConfigurationException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
 		GregorianCalendar loserBithDateGC = new GregorianCalendar();
-		loserBithDateGC.setTime(game.getLoser().getUser().getBirthDate());
 		XMLGregorianCalendar loserBirthDate = null;
+
+		Date loserBDay = game.getLoser().getUser().getBirthDate();
+
+		if(loserBDay != null){
+			loserBithDateGC.setTime(loserBDay);
+		}
+
 		try {
 			loserBirthDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(loserBithDateGC);
-		} catch (DatatypeConfigurationException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
 		win.setBirthDate(winnerBirthDate);
 		loser.setBirthDate(loserBirthDate);
 
@@ -209,6 +230,7 @@ public class GameController extends Controller {
 			uuid = endpoint.publishHighScore(requestType);
 			Logger.info("UUID: " + uuid);
 		} catch (Failure failure) {
+			Logger.error("Publishing Highscore failed");
 			failure.printStackTrace();
 		}
 		TwitterClient twitter =  new TwitterClient();
@@ -216,9 +238,9 @@ public class GameController extends Controller {
 		if(uuid != null) {
 			try {
 				twitter.publishUuid(new TwitterStatusMessage(game.getHumanPlayer().getUser().getName(), uuid, new Date()));
-				Logger.info("Der Text wurde erfolgreich auf Twitter veroeffentlicht!" );
+				Logger.info("UUID " + uuid + " wurde auf Twitter veroeffentlicht" );
 			} catch (Exception e) {
-				Logger.error("Es ist ein Fehler beim veroeffentlichen auf Twitter aufgetreten!" );
+				Logger.error("Es ist ein Fehler beim Veroeffentlichen auf Twitter aufgetreten!" );
 				e.printStackTrace();
 			}
 		}
