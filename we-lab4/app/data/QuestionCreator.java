@@ -1,4 +1,4 @@
-package assets;
+package data;
 
 import at.ac.tuwien.big.we.dbpedia.api.DBPediaService;
 import at.ac.tuwien.big.we.dbpedia.api.SelectQueryBuilder;
@@ -42,7 +42,7 @@ public class QuestionCreator {
 
     public List<Category> getCategories(){
         this.getLinkedOpenDataQuestions();
-        
+
         List<Category> categories = new ArrayList<Category>(1);
         categories.add(this.moviesCategory);
 

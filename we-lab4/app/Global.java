@@ -2,10 +2,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import assets.QuestionCreator;
+import data.QuestionCreator;
 import models.Category;
 import models.JeopardyDAO;
-import models.Question;
 import play.Application;
 import play.GlobalSettings;
 import play.Logger;
